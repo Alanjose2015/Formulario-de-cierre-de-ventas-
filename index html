@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VENTAS TUCUMÁN - Confirmación de Pago y Envío</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primario: #00d4ff;
+            --secundario: #0099cc;
+            --fondo: #0f172a;
+            --fondo-tarjeta: #1e293b;
+            --texto: #f1f5f9;
+            --texto-claro: #94a3b8;
+            --acento: #22d3ee;
+            --exito: #10b981;
+            --advertencia: #f59e0b;
+            --error: #ef4444;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            padding: 20px 15px;
+            color: var(--texto);
+        }
+
+        .contenedor-principal {
+            max-width: 520px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 35px;
+            padding-top: 20px;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--primario), var(--acento));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1px;
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .subtitulo {
+            color: var(--texto-claro);
+            font-size: 0.95rem;
+            margin-top: 8px;
+        }
+
+        .tarjeta {
+            background: var(--fondo-tarjeta);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .tarjeta:hover {
+            box-shadow: 0 6px 25px rgba(0, 212, 255, 0.1);
+        }
+
+        .titulo-seccion {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--primario);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .campo {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--texto-claro);
+            margin-bottom: 6px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="tel"],
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--fondo);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 8px;
+            color: var(--texto);
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primario);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        .checkbox-campo {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 16px;
+            cursor: pointer;
+        }
+
+        .checkbox-campo input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primario);
+            cursor: pointer;
+            margin-top: 2px;
+        }
+
+        .campos-desplegables {
+            padding-left: 28px;
+            border-left: 2px solid rgba(0, 212, 255, 0.25);
+            margin-left: 4px;
+            margin-bottom: 10px;
+            display: none;
+            opacity: 0;
+            transform: translateY(-5px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .campos-desplegables.activo {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .alias-contenedor {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .alias-input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .btn-copiar {
+            padding: 12px 18px;
+            background: linear-gradient(135deg, var(--primario), var(--secundario));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-copiar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+        }
+
+        .notificacion {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--exito);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+        }
+
+        .notificacion.mostrar {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .radio-opcion {
+            padding: 10px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .radio-opcion input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primario);
+            margin-top: 2px;
+        }
+
+        .aviso-destacado {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 10px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+
+        .aviso-destacado p {
+            color: #fcd34d;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .btn-enviar {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .btn-enviar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+        }
+
+        .btn-enviar:active {
+            transform: translateY(0);
+        }
+
+        .campo-error {
+            border-color: var(--error) !important;
+        }
+
+        .texto-error {
+            color: var(--error);
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        .oculto {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="notificacion" id="notificacion">¡Alias copiado!</div>
+
+    <div class="contenedor-principal">
+        <header>
+            <h1 class="logo">VENTAS TUCUMÁN</h1>
+            <p class="subtitulo">✅ Confirmación de Pago y Envío</p>
+        </header>
+
+        <form id="formulario" onsubmit="return false;">
+            
+            <!-- SECCIÓN A: Datos del Comprador -->
+            <div class="tarjeta">
+                <h2 class="titulo-seccion">👤 Datos del Comprador</h2>
+                
+                <div class="campo">
+                    <label for="nombre">Nombre completo *</label>
+                    <input type="text" id="nombre" placeholder="Tu nombre y apellido" required>
+                </div>
+
+                <div class="campo">
+                    <label for="dni">DNI *</label>
+                    <input type="number" id="dni" placeholder="Solo números" required>
+                </div>
+
+                <div class="campo">
+                    <label for="whatsapp">Número de WhatsApp *</label>
+                    <input type="tel" id="whatsapp" placeholder="Ej: 381XXXXXXX" required>
+                </div>
+
+                <div class="campo">
+                    <label for="direccion">Dirección completa de entrega *</label>
+                    <textarea id="direccion" placeholder="Calle, número, barrio, referencia..." required></textarea>
+                </div>
+            </div>
+
+            <!-- SECCIÓN B: Datos de quien recibe -->
+            <div class="tarjeta">
+                <h2 class="titulo-seccion">📦 Datos de Entrega</h2>
+                
+                <label class="checkbox-campo">
+                    <input type="checkbox" id="checkbox-recibe">
+                    <span>¿Recibe otra persona?</span>
+                </label>
+
+                <div class="campos-desplegables" id="campos-recibe">
+                    <div class="campo">
+                        <label for="nombre-recibe">Nombre completo de quien recibe</label>
+                        <input type="text" id="nombre-recibe" placeholder="Nombre y apellido">
+                    </div>
+                    <div class="campo">
+                        <label for="dni-recibe">DNI de quien recibe</label>
+                        <input type="number" id="dni-recibe" placeholder="Solo números">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN C: Detalles de la Compra -->
+            <div class="tarjeta">
+                <h2 class="titulo-seccion">🛒 Detalles de la Compra</h2>
+                
+                <div class="campo">
+                    <label for="codigo-producto">Código del producto</label>
+                    <input type="text" id="codigo-producto" placeholder="Opcional">
+                </div>
+
+                <div class="campo">
+                    <label for="detalle-compra">Nombre y detalles del producto/servicio *</label>
+                    <textarea id="detalle-compra" placeholder="Describe qué estás comprando..." required></textarea>
+                </div>
+            </div>
+
+            <!-- SECCIÓN D: Información de Pago -->
+            <div class="tarjeta">
+                <h2 class="titulo-seccion">💳 Datos de Pago</h2>
+                
+                <div class="campo">
+                    <label>Alias de transferencia</label>
+                    <div class="alias-contenedor">
+                        <input type="text" class="alias-input" id="alias" value="JPONCE2157.NX.ARS" readonly>
+                        <button type="button" class="btn-copiar" onclick="copiarAlias()">📋 Copiar Alias</button>
+                    </div>
+                </div>
+
+                <div class="campo" style="margin-top: 20px;">
+                    <label>¿Cómo envías el comprobante? *</label>
+                    
+                    <label class="radio-opcion">
+                        <input type="radio" name="envio-comprobante" value="adjuntar" checked onchange="cambiarOpcionComprobante()">
+                        <span>Adjuntar comprobante aquí</span>
+                    </label>
+                    
+                    <div id="campo-archivo" style="padding-left: 28px; margin-top: 8px;">
+                        <input type="file" id="comprobante" accept="image/*,.pdf">
+                    </div>
+                    
+                    <label class="radio-opcion">
+                        <input type="radio" name="envio-comprobante" value="whatsapp" onchange="cambiarOpcionComprobante()">
+                        <span>Enviar comprobante por WhatsApp</span>
+                    </label>
+                </div>
+
+                <div class="aviso-destacado">
+                    <p>⚠️ <strong>ACLARACIÓN IMPORTANTE:</strong> Recuerda que además de completar este formulario, debes enviar la captura del producto seleccionado por WhatsApp al <strong>3815727447</strong> para validar tu pedido.</p>
+                </div>
+            </div>
+
+            <button type="button" class="btn-enviar" onclick="enviarFormulario()">
+                ✅ Enviar Pedido y Confirmar por WhatsApp
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Mostrar/ocultar campos de quien recibe
+        const checkboxRecibe = document.getElementById('checkbox-recibe');
+        const camposRecibe = document.getElementById('campos-recibe');
+
+        checkboxRecibe.addEventListener('change', function() {
+            if (this.checked) {
+                camposRecibe.classList.add('activo');
+            } else {
+                camposRecibe.classList.remove('activo');
+            }
+        });
+
+        // Copiar alias
+        function copiarAlias() {
+            const alias = document.getElementById('alias');
+            alias.select();
+            navigator.clipboard.writeText(alias.value).then(() => {
+                const notif = document.getElementById('notificacion');
+                notif.classList.add('mostrar');
+                setTimeout(() => notif.classList.remove('mostrar'), 2500);
+            });
+        }
+
+        // Cambiar opción de envío de comprobante
+        function cambiarOpcionComprobante() {
+            const opcion = document.querySelector('input[name="envio-comprobante"]:checked').value;
+            const campoArchivo = document.getElementById('campo-archivo');
+            
+            if (opcion === 'adjuntar') {
+                campoArchivo.classList.remove('oculto');
+            } else {
+                campoArchivo.classList.add('oculto');
+            }
+        }
+
+        // Validar formulario
+        function validarCampos() {
+            let valido = true;
+            const camposObligatorios = ['nombre', 'dni', 'whatsapp', 'direccion', 'detalle-compra'];
+            
+            camposObligatorios.forEach(id => {
+                const campo = document.getElementById(id);
+                if (!campo.value.trim()) {
+                    campo.classList.add('campo-error');
+                    valido = false;
+                } else {
+                    campo.classList.remove('campo-error');
+                }
+            });
+            
+            return valido;
+        }
+
+        // Enviar formulario
+        function enviarFormulario() {
+            if (!validarCampos()) {
+                alert('⚠️ Por favor completá todos los campos obligatorios marcados con *');
+                return;
+            }
+
+            // Recopilar datos
+            const nombre = document.getElementById('nombre').value.trim();
+            const dni = document.getElementById('dni').value.trim();
+            const whatsapp
+            // Recopilar datos
+const nombre = document.getElementById('nombre').value.trim();
+const dni = document.getElementById('dni').value.trim();
+const whatsapp = document.getElementById('whatsapp').value.trim();
+const direccion = document.getElementById('direccion').value.trim();
+
+// Datos de quien recibe
+const recibeOtraPersona = document.getElementById('checkbox-recibe').checked;
+let nombreRecibe = '';
+let dniRecibe = '';
+if (recibeOtraPersona) {
+    nombreRecibe = document.getElementById('nombre-recibe').value.trim();
+    dniRecibe = document.getElementById('dni-recibe').value.trim();
+}
+
+// Detalles de la compra
+const codigoProducto = document.getElementById('codigo-producto').value.trim() || 'No especificado';
+const detalleCompra = document.getElementById('detalle-compra').value.trim();
+
+// Opción de comprobante
+const opcionComprobante = document.querySelector('input[name="envio-comprobante"]:checked').value;
+const tieneArchivo = document.getElementById('comprobante').value !== '';
+
+// Armar mensaje
+let mensaje = `
+📋 *NUEVO PEDIDO - VENTAS TUCUMÁN*
+━━━━━━━━━━━━━━━━━━━━━━
+👤 *Datos del Comprador:*
+• Nombre: ${nombre}
+• DNI: ${dni}
+• WhatsApp: ${whatsapp}
+• Dirección de entrega: ${direccion}
+`;
+
+if (recibeOtraPersona && nombreRecibe) {
+    mensaje += `
+📦 *Datos de quien recibe:*
+• Nombre: ${nombreRecibe}
+• DNI: ${dniRecibe || 'No especificado'}
+`;
+}
+
+mensaje += `
+🛒 *Detalle de la Compra:*
+• Código: ${codigoProducto}
+• Producto/Servicio: ${detalleCompra}
+`;
+
+if (tieneArchivo || opcionComprobante === 'adjuntar') {
+    mensaje += `
+📎 *Nota:* Adjunté el comprobante en la web, lo envío también por aquí junto con la captura del producto.
+`;
+}
+
+mensaje += `
+⚠️ *Recordatorio:* Adjuntar captura del producto seleccionado.
+━━━━━━━━━━━━━━━━━━━━━━
+¡Gracias por tu compra! 😊
+`;
+
+// Codificar y abrir WhatsApp
+const urlBase = 'https://wa.me/5493815727447?text=';
+const urlFinal = urlBase + encodeURIComponent(mensaje.trim());
+window.open(urlFinal, '_blank');
+        }
+    </script>
+</body>
+</html>
+
