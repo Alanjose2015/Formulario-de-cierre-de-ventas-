@@ -380,132 +380,113 @@
                 </div>
             </div>
 
-            <button type="button" class="btn-enviar" onclick="enviarFormulario()">
-                ✅ Enviar Pedido y Confirmar por WhatsApp
-            </button>
+            <button type="button" class="btn-wp" id="btnEnviar">✅ Enviar Pedido y Confirmar por WhatsApp</button>
+            
         </form>
     </div>
 
     <script>
-        // Mostrar/ocultar campos de quien recibe
-        const checkboxRecibe = document.getElementById('checkbox-recibe');
-        const camposRecibe = document.getElementById('campos-recibe');
+        // Copiar alias
+        function copiarAlias(){
+            const alias=document.getElementById('alias');
+            navigator.clipboard.writeText(alias.value).then(()=>{
+                const n=document.getElementById('notify');
+                n.classList.add('show');
+                setTimeout(()=>n.classList.remove('show'),2200);
+            });
+        }
 
-        checkboxRecibe.addEventListener('change', function() {
-            if (this.checked) {
-                camposRecibe.classList.add('activo');
-            } else {
-                camposRecibe.classList.remove('activo');
-            }
+        // Mostrar/ocultar campos de quien recibe
+        const recibeCheck=document.getElementById('recibeCheck');
+        const recibeCampos=document.getElementById('recibeCampos');
+        recibeCheck.addEventListener('change',function(){
+            recibeCampos.classList.toggle('show',this.checked);
         });
 
-        // Copiar alias
-        function copiarAlias() {
-            const alias = document.getElementById('alias');
-            alias.select();
-            navigator.clipboard.writeText(alias.value).then(() => {
-                const notif = document.getElementById('notificacion');
-                notif.classList.add('mostrar');
-                setTimeout(() => notif.classList.remove('mostrar'), 2500);
-            });
+        // Cambiar opción de comprobante
+        function cambiarOpcion(){
+            const valor=document.querySelector('input[name="comprobante"]:checked').value;
+            const zonaArchivo=document.getElementById('archivoZone');
+            zonaArchivo.classList.toggle('hidden',valor!=='adjuntar');
         }
 
-        // Cambiar opción de envío de comprobante
-        function cambiarOpcionComprobante() {
-            const opcion = document.querySelector('input[name="envio-comprobante"]:checked').value;
-            const campoArchivo = document.getElementById('campo-archivo');
-            
-            if (opcion === 'adjuntar') {
-                campoArchivo.classList.remove('oculto');
-            } else {
-                campoArchivo.classList.add('oculto');
-            }
-        }
-
-        // Validar formulario
-        function validarCampos() {
-            let valido = true;
-            const camposObligatorios = ['nombre', 'dni', 'whatsapp', 'direccion', 'detalle-compra'];
-            
-            camposObligatorios.forEach(id => {
-                const campo = document.getElementById(id);
-                if (!campo || !campo.value.trim()) {
-                    if (campo) campo.classList.add('campo-error');
-                    valido = false;
-                } else {
-                    campo.classList.remove('campo-error');
+        // Validar campos
+        function validar(){
+            let ok=true;
+            const campos=['nombre','dni','whatsapp','direccion','detalle'];
+            campos.forEach(id=>{
+                const el=document.getElementById(id);
+                if(!el.value.trim()){
+                    el.classList.add('error');
+                    ok=false;
+                }else{
+                    el.classList.remove('error');
                 }
             });
-            
-            return valido;
+            return ok;
         }
 
-        // Enviar formulario
-        function enviarFormulario() {
-            if (!validarCampos()) {
-                alert('⚠️ Por favor completá todos los campos obligatorios marcados con *');
+        // Enviar formulario — CONECTADO DIRECTAMENTE AL BOTÓN
+        document.getElementById('btnEnviar').addEventListener('click',function(){
+            if(!validar()){
+                alert('⚠️ Completá todos los campos obligatorios (*)');
                 return;
             }
 
             // Recopilar datos
-            const nombre = document.getElementById('nombre').value.trim();
-            const dni = document.getElementById('dni').value.trim();
-            const whatsapp = document.getElementById('whatsapp').value.trim();
-            const direccion = document.getElementById('direccion').value.trim();
-
-            // Datos de quien recibe
-            const checkRecibe = document.getElementById('checkbox-recibe');
-            const recibeOtraPersona = checkRecibe ? checkRecibe.checked : false;
-            let nombreRecibe = '';
-            let dniRecibe = '';
-            if (recibeOtraPersona) {
-                nombreRecibe = document.getElementById('nombre-recibe').value.trim();
-                dniRecibe = document.getElementById('dni-recibe').value.trim();
-            }
-
-            // Detalles de la compra
-            const codigoInput = document.getElementById('codigo-producto');
-            const codigoProducto = (codigoInput && codigoInput.value.trim()) ? codigoInput.value.trim() : 'No especificado';
-            const detalleCompra = document.getElementById('detalle-compra').value.trim();
-
-            // Opción de comprobante
-            const opcionRadio = document.querySelector('input[name="envio-comprobante"]:checked');
-            const opcionComprobante = opcionRadio ? opcionRadio.value : '';
-            const comprobanteInput = document.getElementById('comprobante');
-            const tieneArchivo = comprobanteInput ? comprobanteInput.value !== '' : false;
+            const nombre=document.getElementById('nombre').value.trim();
+            const dni=document.getElementById('dni').value.trim();
+            const whatsapp=document.getElementById('whatsapp').value.trim();
+            const direccion=document.getElementById('direccion').value.trim();
+            const recibeOtra=recibeCheck.checked;
+            const nombreRecibe=document.getElementById('nombreRecibe').value.trim();
+            const dniRecibe=document.getElementById('dniRecibe').value.trim();
+            const codigo=document.getElementById('codigo').value.trim()||'No especificado';
+            const detalle=document.getElementById('detalle').value.trim();
+            const opcionComp=document.querySelector('input[name="comprobante"]:checked').value;
+            const tieneArchivo=document.getElementById('comprobanteArchivo').value!=='';
 
             // Armar mensaje
-            let mensaje = `📋 *NUEVO PEDIDO - VENTAS TUCUMÁN*\n`;
-            mensaje += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-            mensaje += `👤 *Datos del Comprador:*\n`;
-            mensaje += `• Nombre: ${nombre}\n`;
-            mensaje += `• DNI: ${dni}\n`;
-            mensaje += `• WhatsApp: ${whatsapp}\n`;
-            mensaje += `• Dirección de entrega: ${direccion}\n`;
+            let msg=`📋 *NUEVO PEDIDO - VENTAS TUCUMÁN*
+━━━━━━━━━━━━━━━━━━━━━━
+👤 *Comprador:*
+• Nombre: ${nombre}
+• DNI: ${dni}
+• WhatsApp: ${whatsapp}
+• Dirección: ${direccion}`;
 
-            if (recibeOtraPersona && nombreRecibe) {
-                mensaje += `\n📦 *Datos de quien recibe:*\n`;
-                mensaje += `• Nombre: ${nombreRecibe}\n`;
-                mensaje += `• DNI: ${dniRecibe || 'No especificado'}\n`;
+            if(recibeOtra && nombreRecibe){
+                msg+=`
+
+📦 *Recibe:*
+• Nombre: ${nombreRecibe}
+• DNI: ${dniRecibe||'No especificado'}`;
             }
 
-            mensaje += `\n🛒 *Detalle de la Compra:*\n`;
-            mensaje += `• Código: ${codigoProducto}\n`;
-            mensaje += `• Producto/Servicio: ${detalleCompra}\n`;
+            msg+=`
 
-            if (tieneArchivo || opcionComprobante === 'adjuntar') {
-                mensaje += `\n📎 *Nota:* Adjunté el comprobante en la web, lo envío también por aquí junto con la captura del producto.\n`;
+🛒 *Compra:*
+• Código: ${codigo}
+• Detalle: ${detalle}`;
+
+            if(tieneArchivo || opcionComp==='adjuntar'){
+                msg+=`
+
+📎 Nota: Adjunté el comprobante en la web. Lo envío también por WhatsApp junto con la captura del producto.`;
             }
 
-            mensaje += `\n⚠️ *Recordatorio:* Adjuntar captura del producto seleccionado.\n`;
-            mensaje += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-            mensaje += `¡Gracias por tu compra! 😊`;
+            msg+=`
 
-            // Codificar y abrir WhatsApp directamente
-            const urlFinal = 'https://whatsapp.com' + encodeURIComponent(mensaje);
-            window.location.href = urlFinal;
-        }
+⚠️ Recordatorio: Enviar captura del producto al WhatsApp 3815727447 para validar el pedido.
+━━━━━━━━━━━━━━━━━━━━━━
+¡Gracias por tu compra! 😊`;
+
+            // ABRIR WHATSAPP — funciona en celulares sin bloqueos
+            const url='https://api.whatsapp.com/send?phone=5493815727447&text='+encodeURIComponent(msg);
+            window.location.href=url;
+        });
     </script>
+    
 </body>
 </html>
 
