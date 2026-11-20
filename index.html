@@ -429,8 +429,8 @@
             
             camposObligatorios.forEach(id => {
                 const campo = document.getElementById(id);
-                if (!campo.value.trim()) {
-                    campo.classList.add('campo-error');
+                if (!campo || !campo.value.trim()) {
+                    if (campo) campo.classList.add('campo-error');
                     valido = false;
                 } else {
                     campo.classList.remove('campo-error');
@@ -450,71 +450,60 @@
             // Recopilar datos
             const nombre = document.getElementById('nombre').value.trim();
             const dni = document.getElementById('dni').value.trim();
-            const whatsapp
-            // Recopilar datos
-const nombre = document.getElementById('nombre').value.trim();
-const dni = document.getElementById('dni').value.trim();
-const whatsapp = document.getElementById('whatsapp').value.trim();
-const direccion = document.getElementById('direccion').value.trim();
+            const whatsapp = document.getElementById('whatsapp').value.trim();
+            const direccion = document.getElementById('direccion').value.trim();
 
-// Datos de quien recibe
-const recibeOtraPersona = document.getElementById('checkbox-recibe').checked;
-let nombreRecibe = '';
-let dniRecibe = '';
-if (recibeOtraPersona) {
-    nombreRecibe = document.getElementById('nombre-recibe').value.trim();
-    dniRecibe = document.getElementById('dni-recibe').value.trim();
-}
+            // Datos de quien recibe
+            const checkRecibe = document.getElementById('checkbox-recibe');
+            const recibeOtraPersona = checkRecibe ? checkRecibe.checked : false;
+            let nombreRecibe = '';
+            let dniRecibe = '';
+            if (recibeOtraPersona) {
+                nombreRecibe = document.getElementById('nombre-recibe').value.trim();
+                dniRecibe = document.getElementById('dni-recibe').value.trim();
+            }
 
-// Detalles de la compra
-const codigoProducto = document.getElementById('codigo-producto').value.trim() || 'No especificado';
-const detalleCompra = document.getElementById('detalle-compra').value.trim();
+            // Detalles de la compra
+            const codigoInput = document.getElementById('codigo-producto');
+            const codigoProducto = (codigoInput && codigoInput.value.trim()) ? codigoInput.value.trim() : 'No especificado';
+            const detalleCompra = document.getElementById('detalle-compra').value.trim();
 
-// Opción de comprobante
-const opcionComprobante = document.querySelector('input[name="envio-comprobante"]:checked').value;
-const tieneArchivo = document.getElementById('comprobante').value !== '';
+            // Opción de comprobante
+            const opcionRadio = document.querySelector('input[name="envio-comprobante"]:checked');
+            const opcionComprobante = opcionRadio ? opcionRadio.value : '';
+            const comprobanteInput = document.getElementById('comprobante');
+            const tieneArchivo = comprobanteInput ? comprobanteInput.value !== '' : false;
 
-// Armar mensaje
-let mensaje = `
-📋 *NUEVO PEDIDO - VENTAS TUCUMÁN*
-━━━━━━━━━━━━━━━━━━━━━━
-👤 *Datos del Comprador:*
-• Nombre: ${nombre}
-• DNI: ${dni}
-• WhatsApp: ${whatsapp}
-• Dirección de entrega: ${direccion}
-`;
+            // Armar mensaje
+            let mensaje = `📋 *NUEVO PEDIDO - VENTAS TUCUMÁN*\n`;
+            mensaje += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+            mensaje += `👤 *Datos del Comprador:*\n`;
+            mensaje += `• Nombre: ${nombre}\n`;
+            mensaje += `• DNI: ${dni}\n`;
+            mensaje += `• WhatsApp: ${whatsapp}\n`;
+            mensaje += `• Dirección de entrega: ${direccion}\n`;
 
-if (recibeOtraPersona && nombreRecibe) {
-    mensaje += `
-📦 *Datos de quien recibe:*
-• Nombre: ${nombreRecibe}
-• DNI: ${dniRecibe || 'No especificado'}
-`;
-}
+            if (recibeOtraPersona && nombreRecibe) {
+                mensaje += `\n📦 *Datos de quien recibe:*\n`;
+                mensaje += `• Nombre: ${nombreRecibe}\n`;
+                mensaje += `• DNI: ${dniRecibe || 'No especificado'}\n`;
+            }
 
-mensaje += `
-🛒 *Detalle de la Compra:*
-• Código: ${codigoProducto}
-• Producto/Servicio: ${detalleCompra}
-`;
+            mensaje += `\n🛒 *Detalle de la Compra:*\n`;
+            mensaje += `• Código: ${codigoProducto}\n`;
+            mensaje += `• Producto/Servicio: ${detalleCompra}\n`;
 
-if (tieneArchivo || opcionComprobante === 'adjuntar') {
-    mensaje += `
-📎 *Nota:* Adjunté el comprobante en la web, lo envío también por aquí junto con la captura del producto.
-`;
-}
+            if (tieneArchivo || opcionComprobante === 'adjuntar') {
+                mensaje += `\n📎 *Nota:* Adjunté el comprobante en la web, lo envío también por aquí junto con la captura del producto.\n`;
+            }
 
-mensaje += `
-⚠️ *Recordatorio:* Adjuntar captura del producto seleccionado.
-━━━━━━━━━━━━━━━━━━━━━━
-¡Gracias por tu compra! 😊
-`;
+            mensaje += `\n⚠️ *Recordatorio:* Adjuntar captura del producto seleccionado.\n`;
+            mensaje += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+            mensaje += `¡Gracias por tu compra! 😊`;
 
-// Codificar y abrir WhatsApp
-const urlBase = 'https://wa.me/5493815727447?text=';
-const urlFinal = urlBase + encodeURIComponent(mensaje.trim());
-window.open(urlFinal, '_blank');
+            // Codificar y abrir WhatsApp directamente
+            const urlFinal = 'https://whatsapp.com' + encodeURIComponent(mensaje);
+            window.location.href = urlFinal;
         }
     </script>
 </body>
